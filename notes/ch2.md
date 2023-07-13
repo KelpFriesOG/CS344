@@ -4,7 +4,7 @@ What is the core difference between recursion and backtracking?
 
 - With recursion, **you take path based on the data that is given, the path may make a call to the function from within the function** but with different parameters.
 
-- Eventually these parameters mut converge on to a base case, in which the method's recursion stops.
+- Eventually these parameters must converge on to a base case, in which the method's recursion stops.
 
 - Backtracking is also a recursive strategy, meaning that it also involves calling a method from within itself. However, the goal is to construct the final solution incrementally.
 
