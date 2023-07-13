@@ -20,8 +20,7 @@ If each file is equally likely to be accessed, then the expected search cost for
 
 If we change the order of some files, the cost of accessing them will inevitably change as well. 
 
-
-
+Work to be done :D
 
 
 ---
