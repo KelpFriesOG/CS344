@@ -817,13 +817,13 @@ Let's confirm this on an example!
 
 Suppose the graph below:
 
-![Tarjan Example 1](./../images/Tarjan_Example1.PNG)
+![Kosaraju-Sharir Example 1](./../images/Kosaraju_Example1.PNG)
 
 The color of the nodes should help you identify each distinct component.
 
 Suppose we started the traversal at A, and then we traversed this way:
 
-![Tarjan Traversal 1](./../images/Tarjan_Example1_DFS_1.PNG)
+![Kosaraju-Sharir Traversal 1](./../images/Kosaraju_Example1_DFS_1.PNG)
 
 Pay attention to this next part, in my opinion going over an example like this is much better than reading a tedious proof!
 
@@ -841,7 +841,7 @@ Suppose v = A:
 
 Here is the pictoral explanation:
 
-![Tarjan's Algorithm attempt 1](./../images/Tarjan_Example1_Attempt1.PNG)
+![Kosaraju-Sharir Algorithm attempt 1](./../images/Kosaraju_Example1_Attempt1.PNG)
 
 ---
 
@@ -858,7 +858,7 @@ $low(G) = G.pre$.
 
 Here is the pictoral explanation:
 
-![Tarjan successful attempt!](./../images/Tarjan_Example1_Attempt2.PNG)
+![Kosaraju-Sharir successful attempt!](./../images/Kosaraju_Example1_Attempt2.PNG)
 
 ---
 
