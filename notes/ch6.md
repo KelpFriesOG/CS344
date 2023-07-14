@@ -817,13 +817,13 @@ Let's confirm this on an example!
 
 Suppose the graph below:
 
-![Kosaraju-Sharir Example 1](./../images/Kosaraju_Example1.PNG)
+![Tarjan Example 1](./../images/Tarjan_Example1.PNG)
 
 The color of the nodes should help you identify each distinct component.
 
 Suppose we started the traversal at A, and then we traversed this way:
 
-![Kosaraju-Sharir Traversal 1](./../images/Kosaraju_Example1_DFS_1.PNG)
+![Tarjan Traversal 1](./../images/Tarjan_Example1_DFS_1.PNG)
 
 Pay attention to this next part, in my opinion going over an example like this is much better than reading a tedious proof!
 
@@ -841,7 +841,7 @@ Suppose v = A:
 
 Here is the pictoral explanation:
 
-![Kosaraju-Sharir Algorithm attempt 1](./../images/Kosaraju_Example1_Attempt1.PNG)
+![Tarjan Algorithm attempt 1](./../images/Tarjan_Example1_Attempt1.PNG)
 
 ---
 
@@ -858,7 +858,7 @@ $low(G) = G.pre$.
 
 Here is the pictoral explanation:
 
-![Kosaraju-Sharir successful attempt!](./../images/Kosaraju_Example1_Attempt2.PNG)
+![Tarjan successful attempt!](./../images/Tarjan_Example1_Attempt2.PNG)
 
 ---
 
@@ -888,7 +888,85 @@ If neither the pictures nor the words in the previous example made sense to you,
 
 10) Suppose that v is the root of the sink component C, then v can only reach some other vertex w, if $w \in C$. We know v can reach all its descendants, and every other vertex in C other than v is a descendant of v. If $low(w) = w.pre$ for any other vertex the v in C this would imply the existence of a second root of C, which is impossible.
 
-We can run the following algorithm to find the root of every sink component in a directed graph G in $O(V+E)$ time.
+Algorithm steps:
+
+1) **Tarjan's algorithm requires $O(V + E)$ time to find the root of every sink component in a directed graph using a global whatever first search.**
+
+2) **We mark an delete each sink components in an additional $O(V+E)$ time cost. Then we recursively start at step 1 for the resulting graph.**
+
+- The resulting algorithm **may require V recursive calls if each component consists of a single vertex, which would give us a total running time of**:
+
+$$O(V(V + E)) \rarr O(V^2+VE)$$
+
+- Note that E is actually $V^2$, therefore VE is the dominating term and:
+
+$$O(VE)$$
+
+is the resulting complexity.
+
+This complexity is worse than that of the Kosaraju-Sharir algorithm: $O(V + E)$, how do we fix that?
+
+We create a separe stack of vertices apart from the recursive stack. When we start processing a new vertex, we push it onto the stack.
+
+- Suppose the vertex we pushed onto the stack is v.
+
+- When we finish processing that vertex (and this implies we have finished processing all its descendants), we compare v.low and v.pre.
+
+- **If $v.low = v.pre$** we can say:
+
+1) **Vertex v is the root of the sink component C.**
+
+2) **All vertices in C appear consecutively at the top of the stack.**
+
+3) **The deepest vertex in C on the auxillary stack is v (since v was the root of the component, it started processing first and is at the bottom of the stack)**
+
+*We can identify the vertices that form the component C by popping off vertices from the stack until we reach v. All vertices popped upto v and v itself are all part of the sink component!*
+
+After this we could choose to actually remove all these vertices from the graph but that would take more time. **Instead we label all the vertices in the component and identify their root as v. Marked vertices (vertices with a root) are ignored when moving forward in the DF search.**
+
+Here is the pseudocode for Tarjan's algorithm:
+
+    Tarjan(G):
+
+        clock = 0
+        S = new Stack()
+        
+        for all vertices v:
+            unmark v
+            v.root = none
+        
+        for all vertices v:
+            if v is unmarked:
+                TarjanDFS(v)
+
+    TarjanDFS(v):
+
+        mark v
+
+        clock = clock + 1
+        v.pre = clock
+        v.low = v.pre
+
+        Push(S, v)
+
+        for each edge v -> w:
+            if w is unmarked:
+                TarjanDFS(w)
+                v.low = min{v.low, w.low}
+            else if w.root = None:
+                v.low = min{v.low, w.pre}
+
+        
+        if v.low = v.pre:
+            until w = v:
+                w = pop(S)
+                w.root = v
+
+***To see this code in action (with the appropriate comments) checkout tarjanalgo.py***
+
+---
+
+
 
 
 
