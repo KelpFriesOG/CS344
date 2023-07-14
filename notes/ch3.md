@@ -726,7 +726,93 @@ What if we choose a tree as the memoization structure instead of a multidimensio
 
 - **An independent set in a graph is a subset of vertices with no edges between them.**
 
-TBC...( skipped for now :) )
+- Finding the largest independent set of vertices in any given graph is very difficult!
+
+- However, for certain types of graphs we can find the independent sets of said graph much faster!
+
+**If the input graph is a tree, with n vertices we can compute the largest independent set in O(n) time.**
+
+For any node v in some tree T, let $MIS(v)$ denote the size of the largest independent set in the subtree rooted at v.
+
+**Any independent set in this subtree that excludes v itself is the union of the independent sets in the subtrees rooted at the children v.**
+
+Visually:
+
+![Largest Independent Set of a Tree](./../images/Tree_Max_Independent_Set_Example1.PNG)
+
+Notice that if we exclude v, the root of the tree, the largest independent set of the entire tree is union of the largest independent sets in each of the subtrees.
+
+The length of the largest independent subset in the left tree is 2, the length for the middle tree is 1, and the length of the right tree's is 3. Therefore the length of the largest independent set of the entire tree is the sum (2 + 1 + 3) = 6. 
+
+*Why not include the root of each subtree such that the calculation looks like: (3 + 2 + 4) = 9?*:
+
+- **If we include the roots keep in mind that the roots can access the leaves, therefore there cannot be an independent set that contains both the root of a subtree and its leaves (or the subtree's subtrees)**
+
+**Therefore when determining the largest independent set we have to choose whether to use choose the root, exclude the direct subtrees and then directly recurse on its grandchildren (which may be subtrees), or exclude the root and recursively call the direct subtrees.**
+
+The choice can be represented mathematically as:
+
+$$MIS(v) = max\{\Sigma_{w \downarrow v} MIS(v), \space \space \space 1 + \Sigma_{w \downarrow v} \Sigma_{x \downarrow w} MIS(x)\}$$
+
+where $w \downarrow v$ means "w is a child of v"
+
+**Visually this simply means:**
+
+![The largest independent set choice](./../images/Largest_Independent_Set_Choice.PNG)
+
+We can also use the tree to memoize the tree! Wowsers!
+
+- Introduce a new field called MIS for each node v, such that we can set v.MIS
+
+- **Every subproblem depends on either a node's children or grandchildren nodes. Therefore, our best bet is to work and process v.MIS for the deepest nodes and work our way back up to the root!**
+
+- *What type of tree traversal gives us the deepest nodes first (in one continuous layer), and the second deepest layer, and so forth, up to the root?*: **DFS or postorder traversal!**
+
+- **Just because we are utilizing DP does not mean recursion disappears. DFS is most naturally implemented via recursion, so we use it for that purpose!**
+
+What about the running time?: Well each node may have varying numbers of children, but each node only has one parent and one grandparent.
+
+- **Since each node has a constant number of parents and grandparents, and because the work passed up from each node to the grandparents and parent node occurs in constant time, the overall time complexity is $O(c*n) \rarr O(n)$, where n is the number of vertices and c is some constant amount of work!**
+
+Here is the pseudocode for the first dynamic programming approach:
+
+    TreeMIS(v):
+        skipv = 0
+        for each child of v, w:
+            skip v = skipv + TreeMIS(w)
+        keepv = 1
+        for each grandchild of v, x:
+            keepv = keepv + x.MIS
+        
+        v.MIS = max{keepv, skipv}
+        return v.MIS
+
+
+**Check out this code in longest_independent_set.py**
+
+Instead of defining two constants that represent the two options for the vertex v, we could make skipv and keepv inate functions or properties of each vertex.
+
+$$v.MISyes = 1 + \Sigma_{w \downarrow v}w.MISno$$
+$$v.MISno = \Sigma_{w \downarrow v} max\{MISyes(w), \space \space \space MISno(w)\}$$
+
+v.MISyes denotes the size of the largest independent set of the subtree rooted at v that ***includes v***.
+
+v.MISno denotes the size of the largest independent set of the subtree rooted at v that ***excludes v***.
+
+If we have these properties for every node, we are memoizing the recursion into the tree itself (into its nodes).The memoization memoizes the values for each node and for both functions in $O(n)$ time.
+
+Here is the pseudocode for the second dynamic programming approach:
+
+    TreeMIS2(v):
+        
+        v.MISno = 0
+        v.MISyes = 1
+        for each child of v, w:
+            v.MISno = v.MISnp + TreeMIS2(w)
+            v.MISyes = v.MISyes + w.MISno
+        return max{v.MISyes, v.MISno}
+
+**Check out this code in longest_independent_set2.py**
 
 ---
 
