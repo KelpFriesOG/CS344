@@ -477,7 +477,6 @@ Goal: Optimal alignment of A[1..i] and B[1..j]
 
 This is to say that the edit distance is equal to what it was before comparing i with the jth column (which is in Edit[i, j-1]) plus 1 for the distance incurred by this insertion. 
 
-
 - **Deletion**: The jth entry in the bottom row is empty, in which case the edit distance can be qualified as:
 
 *Edit[i-1, j] + 1*
@@ -786,7 +785,6 @@ Here is the pseudocode for the first dynamic programming approach:
         
         v.MIS = max{keepv, skipv}
         return v.MIS
-
 
 **Check out this code in longest_independent_set.py**
 
