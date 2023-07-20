@@ -312,27 +312,169 @@ Suppose the example graph below:
 
 ![Jarnik Example 1](./../images/Jarnik_Example_1.PNG)
 
+Suppose we start at some arbitrary vertex, lets say E!
 
+Lets mark up the vertex E, and then consider its adjacent edges:
 
+![Jarnik Example 2](./../images/Jarnik_Example_2.PNG)
 
+Which of its adjacent edges has the shortest weight? Well we could choose $ED$ or $EF$, but lets say our algorithm chooses $ED.
+
+- Now we take D out of the heap, because an edge with D was used!
+
+The resulting graph:
+
+![Jarnik Example 3](./../images/Jarnik_Example_3.PNG)
+
+**Here we have to consider the adjacent edges to both E and D** and choose the shortest untraversed edge from that set.
+
+Misconception: We choose the shortest edge originating at the most recent vertex (in this case D).
+
+NO! **We check the path to all vertices directly adjacent from all vertices in the tree F.**
+
+Edges we are considering: $DB, DF, EB, EC, EF$. The minimum weighted edge from this set is EF, so we take that one!
+
+The resulting graph:
+
+![Jarnik Example 4](./../images/Jarnik_Example_4.PNG)
+
+Edges up for consideration:
+$$DB, DF, EB, EC$$
+**Edge DF is disqualified because D and F are both in F!**
+
+Minimum edge from: $DB, EB, EC$ is $EC$!  
+
+The sequence of following graphs look like:
 
 ---
 
+![Jarnik Example 5](./../images/Jarnik_Example_5.PNG)
 
+Edges up for consideration:
+$$CA, CB, DB, DF, EB$$
+**Edge $DF$ is disqualified because D and F are both in F!**
 
+Minumum edge from : $CA, CB, DB, EB$ is $CB$!
 
+![Jarnik Example 6](./../images/Jarnik_Example_6.PNG)
 
+Edges up for consideration:
+$$BA, BD, BE, CA, DF$$
+**Edges $BD, BE, DF$ are disqualified because B, D, E, and F are already in F.**
 
+Minimum edge from : $BA, CA$ is $BA$!
+
+![Jarnik Example Finished](./../images/Jarnik_Example_Finished.PNG)
+
+Graph is finished, all vertices are processed, heap should be empty!
 
 ---
 
-Pseudocode:
+**The key here is that not all the unmarked edges are up for consideration. Only edges with a single vertex in the tree F (the vertices and edges in maroon) are considerd.**
 
+Looking at the pseudocode, it is not apparent exactly what the algorithm does, but looking at the graph brings some context!
 
+***Also, if you have studied independently, especially on YT, this graph example should be familiar ;)***
+
+- ExtractMin() and Insert() method are called O(V) times (once for each vertex except s, the starting vertex).
+
+- DecreaseKey() is called O(E) times.
+
+- If we use a fibo heap, the runtime is:
+
+$$O(E*(D(n)) + V*(I(n)) )$$
+
+Where I(n) is the max complexity between ExtractMin and Insert and D(n) is the complexity of the DecreaseKey() method.
+
+If we insert the appropriate complexities we get:
+
+$$O(E + V \log V)$$
+
+This means the algorithm is faster as long as E > O(V). 
+
+- **This improvement (using a fib heap) is only a slight speed boost unless the graph we are using is abnormally large and complex.**
 
 ---
 
 ## Kruskal's Algorithm
+
+Kruskal thought that Borvuka's algorithm was a little too complicated and created his own twist.
+
+The core jyst of this algorithm is: **Scan all edges by increasing weight, if the edge is safe we add it to F.**
+
+Here is an example the textbook provides: 
+
+![Kruskal Textbook Example](./../images/Kruskal_Textbook_Example.PNG)
+  
+- **We can sort the edges via mergesort in $O(E \log E)$ time.**
+
+We then go through this sorted list of edges that starts from the minimum weighted edge in the graph using a for-loop. **Each edge we examine is safe only and only if the two endpoints are in two different components of F.**
+
+- If we encounter a safe edge that connects two components of F, it must be the shortest edge that connects the two components (since edges are ordered by increasing weight).
+
+- Each vertex needs to know what component of F it is in.
+
+**When two components join, the vertices of the smaller component inherit the label of the larger component.**
+
+- To do the previous step we have to traverse the smaller component via whatever first search. 
+- We have to traverse through at most V vertices for the search.
+- Each time to components combine, the larger component grows by at least a factor of 2, therefore for any particular vertex, it's label can change at most $O(\log V)$ times.
+
+**Therefore the total time spent updating labels is at most: $O(V \log V)$**
+
+Generally, Kruskal's algorithm deals with disjoint sets of vertices (components) and combines them. To do this, we need to develop 3 set related algorithms.
+
+1) MakeSet(V): Create a new set containing only v.
+2) Find(V): Return the component identifier that identifies what component V is in.
+3) Union(U, V): Replace the sets containing u and v with the union of their sets.
+
+Here is the pseudocode in terms of these functions:
+
+    sort E by increasing weight
+    F = (V, Empty Set)
+    for each vertex, v in V:
+        MakeSet(v)
+    
+    for i = 1 to | E |:
+        uv = ith lightest edge in E
+        if Find(u) != Find(v): # If u and v are in separate components...
+            Union(u, v)
+            Add u,v to F
+    
+    return F
+
+Couple pointers to note:
+
+1) The overall complexity is dominated by the initial sorting of the vertices!
+
+Proof:
+
+There are V MakeSet() operations where V is the number of vertices and 2*E Find() operations (two for each edge because we check each endpoint; u and v). We also make V-1 Union operations at most. MakeSet() and Find() run in constant, $O(1)$, time, but the Union() method is more complicated. The Union() operation runs in $O(log(V))$, amortized, time. Overall all these things considered the time complexity of everything except the sorting portion amounts to:
+
+$$O(V*MS(n) + 2E*F(n) + (V - 1)*U(n))$$
+
+Where 
+- $MS(n)$ is the complexity of the MakeSet() method
+- $F(n)$ is the complexity of the Find() method
+- $U(n)$ is the complexity of the Union() method
+
+Plugging these complexities in we get:
+
+$$O( V*O(1) + 2E*O(1) + (V - 1) * (\log V) )$$
+$$O(V + 2E + V \log V )$$
+$$O(E + V \log V)$$
+
+Now the complexity of the sorting algorithm is: $O(E \log E)$
+
+Recall that the number of edges in a graph is always bounded by the number of vertices in the worst case!
+
+Therefore we can restate $O(E \log E)$ as $O( E \log V)$
+
+This also means that the overall complexity of Kruskal's algorithm is dominated by the sorting algorithm since the term $E \log E$ dominates $V \log V$.
+
+Overall complexity of Kruskal's algorithm: $$O(E \log V)$$
+
+**This complexity is exactly the same as Borvuka's algorithm or Jarnik's algorithm (with a traditional binary heap).**
 
 ---
 
