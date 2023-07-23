@@ -4,7 +4,8 @@ class Graph:
         self.V= vertices #No. of vertices
         self.graph = [] # default dictionary to store graph
         self.edges = [[]] * vertices
-        self.priority = [[]] * vertices
+        self.v_edges = [None] * vertices
+        self.priority = [None] * vertices
 
 	# function to add an edge to graph
     def addEdge(self,u,v,w):
@@ -39,6 +40,27 @@ class Graph:
     def jarnik(self):
         
         return
+    
+
+    def jarnik_init(self, s):
+        
+        V = self.V
+        E = self.edges
+        
+        for i in range(len(V)):
+            if V[i] == s:
+                continue
+            
+            else:
+                try:
+                    self.v_edges[i] = E[i][s]
+                    self.priority[i] = E[i][s][1] 
+                except:
+                    self.v_edges[i] = None
+                    self.priority[i] = 1000000
+                    continue
+        
+                
         
         
 

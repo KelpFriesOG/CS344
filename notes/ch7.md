@@ -477,14 +477,3 @@ Overall complexity of Kruskal's algorithm: $$O(E \log V)$$
 **This complexity is exactly the same as Borvuka's algorithm or Jarnik's algorithm (with a traditional binary heap).**
 
 ---
-
-
-
-
-
-
-
-
-
-
----
