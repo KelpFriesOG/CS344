@@ -14,17 +14,20 @@ from queue import PriorityQueue
     Priority Queue implementation which includes familiar operations including
     DecreaseKey!
     
-    For practice I plan on choosing option 2 :)
+    - Instead of using path and previous as properties attached to vertex objects,
+    I can use two arrays that store the prev and path value for each vertex globally!
+    
+    I choose option 3 because I am lazy. I suggest using option 2 for practice.
+    
+    UPDATE: IT WORKS!
     
     '''
 
 class Vertex():
     MAX = 1000000
     
-    def __init__(self, pos, prev = None, path = MAX, marked = False) -> None:
+    def __init__(self, pos, marked = False) -> None:
         self.pos = pos
-        self.prev = prev
-        self.path = path
         self.marked = marked
         
     def __repr__(self) -> str:
@@ -34,46 +37,50 @@ def dijkstra(s, vertices, adj_list) -> None:
     
     init_sssp(vertices, s)
     pq = PriorityQueue()
-    listified_pq = [None] * len(vertices)
+    
+    print("Starting...")
     
     vertices[s].marked = True
-    pq.put((vertices[s].path, vertices[s]))
+    pq.put((paths[s], vertices[s]))
 
-    while not pq.empty:
+    while pq.qsize() != 0:
         
-        u = pq.get()
-        for i in range(adj_list[u.pos]):
+        u = pq.get()[1]
+        for i in range(len(adj_list[u.pos])):
             
             v = vertices[adj_list[u.pos][i][0]]
             weight = adj_list[u.pos][i][1]
             
-            if u.path + weight < v.path:
+            if paths[u.pos] + weight < paths[v.pos]:
+                
                 relax(u, v, weight) # This already updates the value of v.path GLOBALLY
                 
                 if v.marked == True:
                     continue
                 else:
                     v.marked = True
-                    pq.put((v.path, v))
+                    pq.put((paths[v.pos], v))
     return
 
 def relax(u, v, weight) -> None:
     
-    v.path = u.path + weight
-    v.prev = u
+    # v.path = u.path + weight
+    # v.prev = u
+    
+    paths[v.pos] = paths[u.pos] + weight
+    preds[v.pos] = u
     
     return
 
 def init_sssp(vertices, s) -> None:
     
-    source = vertices[s]
-    source.path = 0
-    source.prev = None
+    paths[s] = 0
+    preds[s] = None
     
     for i in range(len(vertices)):
         if i != s:
-            vertices[i].path = 1000000
-            vertices[i].prev = None
+            paths[i] = 1000000
+            preds[i] = None
             
     return
     
@@ -83,11 +90,19 @@ def main():
                 Vertex(3), Vertex(4), Vertex(5)]
     adj_list = [[[1, 7], [2, 12]], [[2, 2], [3, 9]], [[4, 10]], [[5, 1]], [[3, 4], [5, 5]], []]
     
-    dijkstra(0, vertices, adj_list)
+    global paths
+    global preds
+    
+    paths = [None] * len(vertices)
+    
+    preds = [None] * len(vertices)
+    
+    source = 0
+    
+    dijkstra(source, vertices, adj_list)
     
     for i in range(len(vertices)):
-        print(vertices[i])
-        print(vertices[i].marked)
+        print("Shortest path length from", source, "to", i, "is", paths[i])
     
     return
     
