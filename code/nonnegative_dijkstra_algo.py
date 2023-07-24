@@ -98,8 +98,6 @@ def main():
         print("Shortest path length from", source, "to", i, "is", paths[i])
     
     return
-    
-    return
 
 if __name__ == '__main__':
     
