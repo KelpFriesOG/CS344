@@ -1,7 +1,5 @@
 from queue import PriorityQueue
 
-# WIP does not work as intented for now!
-
 # Problem:
 ''' The built in priority in Python does not have a DecreaseKey function.
     If I want to replicate the behavior of this function I have two options:
