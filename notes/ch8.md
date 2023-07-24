@@ -86,7 +86,69 @@ A note: We should really be saying shortest *walk* as opposed to shortest path i
 
 ## The Only SSSP Algorithm
 
+Just like graph traversals and MSTs, the SSSP problem has a generic solution that applies to every concrete algorithm made to solve it!
 
+This generic algorithm is also known as Ford's algorithm
+
+The algorithm has one goal which won't make sense for now:
+**Repeatedly relax tense edges until no tense edges exist! (massage the damn graph!?)**
+
+Each vertex is given 2 properties (alternatively we can implement two arrays to store the properties for each vertex).
+
+- **dist(v)**: This property stores the length of the shortest path we know of (currently). The value of this property changes until it eventually becomes the shortest path from some source vertex, s, to v. 
+
+- **pred(v)**: This property stores the direct predeccesor of v based on the current minimum weighted path from some source vertex, s, to v.
+
+Note: In my code I use arrays instead of properties, and instead of dist I called the property path (different teminology, and slightly different implementation but my code accomplishes the same thing as the pseudocode you will see).
+
+- Similar to the parent pointers of any other tree, the pred pointers here define a changing tree that is rooted at s (s has no predecessor, it is the root).
+
+Therefore to initialize this tree as being simple s, the source vertex, we utilize the following pseudocode:
+
+    InitSSSP(s):
+        
+        dist(s) = 0
+        pred(s) = null
+
+        for all vertices, v, except s:
+            dist(v) = infinity
+            pred(v) = null
+
+Each edge of the tree can be defined as *tense* or *relaxed*.
+
+**An edge is considered tense if $dist(u) + weight(u \rarr v) < dist(v)$**
+
+**This would imply that dist v is not the shortest value it can be, because a path from the source to u and then through to v is shorter than whatever is currently considered to be the shortest path from the source to v!**
+
+- To fix this we simply change dist(v) to equal the smaller path's length: $dist(v) = dist(u) + weight(u \rarr v)$
+- We should also update the predecessor of v to now be u, since the new shortest path goes from the source to u and then directly to v!: $pred(v) = u$
+
+The principle of a tense edge is crucial to understanding all shortest path algorithms!
+
+The process described in the two steps above (the bullet points) is called "relaxing" a tense
+edge.
+
+If an edge is not tense then it is relaxed!
+
+Pseudocode:
+
+    Relax(u, v):
+        dist(v) = dist(u) + weight(u, v)
+        pred(v) = u
+    
+
+With all of that in mind the pseudocode for Ford's algorithm is extremely intuitive:
+
+    FordSSSP(s):
+        InitSSSP(s)
+        while there is a tense edge:
+            relax ANY tense edge 
+            # How we find and the order in which we pick tense edges is where our specialized algorithms differ from one another.
 
 ---
 
+## Unweighted Graphs: Breadth-First Search
+
+
+
+---
