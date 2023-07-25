@@ -545,6 +545,152 @@ If a graph has negative edges, the "wavefront" heuristic is no longer accurate o
 
 ## Relax ALL the Edges: Bellman-Ford
 
+The Bellman-Ford algorithm is sometimes referred to as the Bellman-Kalaba or Bellman-Shimbel algorithms.
+
+The algorithm is by far one of the most straightforward takes on Ford's generic algorithm (it is derieved directly from it, hence the name)!
+
+The core idea of the algorithm is: **Relax ALL the tense edges, and then recurse**.
+
+Pseudocode:
+
+    BellmanFord(s):
+        InitSSSP(s)
+        while there is at least one tense edge:
+            for every outgoing edge from u, u-> v:
+                if u -> v is tense:
+                    relax(u, v)
+
+We can prove correctness and efficiency of the algorithm via the following lemma. 
+
+-*If you have not paid attention to the lemmas too much I highly advise that you try to understand this one at least!*
+
+**Lemma 8.6**: *For every vertex v and non-negative integer i, after i iterations of the main loop of BellmanFord, we have $dist(v) \le dist_{\le i}(v)$*
+
+**Proof**: Once again we use induction on i. The base case (i = 0) is trivial, so we focus on the inductive cases where $i > 0$.
+
+Suppose some vertex v and let W be the minimum weighted walk from s to v consisting of at most i edges (tie break any way you deem fit).
+
+- **By definition W has length = $dist_{\le i}(v)$.**
+
+**Case 1 ---**
+
+The trivial case is that W has no edges, meaning that it is a walk from s to s. This means $v = s$ and $dist_{\le i}(s) = 0$.
+
+- The initial value for $dist(s)$ was set to 0 and $dist(s)$ can never increase. Therefore the identity $dist(s) \le 0$ always holds true!
+
+**Case 2 ---**
+
+Otherwise let the edge $u \rarr v$ be the last edge of the walk W. The inductive hypothesis implies that after the i-1th iteration of the inner loop $dist(u) \le  dist_{\le i-1}(u)$.
+
+- When we hit the ith iteration of the outer loop we consider the edge $u \rarr v$ in the inner loop and there are two possible scenarios
+
+1) $dist(v) < dist(u) + weight(u \rarr v)$ already
+2) $dist(v) >= dist(u) + weight(u \rarr v)$ in which case we have to set dist(v): $dist(v) = dist(u) + weight(u \rarr v)$.
+
+In either case we can say:
+
+$$dist(v) \le  dist_{\le i - 1}(u) + weight(u \rarr v) = dist_{\le i}(v)$$
+
+dist(v) cannot increase further, but it may decrease more before the ith iteration of the outer loop fully ends. Regardless the identity still holds!
+
+In both Case 1 and Case 2, we conclude that $dist(v) \le dist_{\le i}(v)$ by the end of the ith iteration.
+
+**PROOF DONE**
+
+If the graph has no negative cycles then the shortest walk from s to any other vertex always has a length that is at most V - 1 edges long. Bellman Ford should always halt with the correct SSSP solution after V - 1 iterations.
+
+- If the Bellman-Ford algorithm runs for V - 1 iterations and then after the fact some tense edge still remain, this indicates the presence of a negative cycle.
+
+Here is some more concrete pseudocode that puts these observations into practice:
+
+    BellmanFord(s):
+        InitSSSP(s)
+        repeat V - 1 times:
+            for every outgoing edge from u, u -> v:
+                if u -> v is tense:
+                    Relax(u, v)
+        for every edge u -> v:
+            if u -> v is tense:
+                return "ROGUE NEGATIVE CYCLE DETECTED!!!"
+
+**The Bellman-Ford algorithm is always efficient, even if the graph has negative cycles or negative edges because of this halting condition!**
+
+**Time complexity of Bellman-Ford algorithm: $O(VE)$**
+
+- *Dijkstra's algorithm is a tad faster than Bellman-Ford in practice*
+
+### Moore's Improvement
+
+Moore's algorithm was proposed in the same paper that published the idea of a BFS for the traversal of an unweighted (or equally weighted) graph. 
+
+- *This algorithm is in fact very similar to the BFS approach.*
+
+- **The worst case time complexity is $O(VE)$, but the algorithm is faster than the Bellman-Ford algorithm in practice.**
+
+*How is it faster?*: **It checks for and ignores "obviously" not tense edges.**
+
+We can derieve Moore's algorithm by making two minor adjustments to the original BFS traversal based algorithm.
+
+1) Replace "+1" with $+weight(u \rarr v)$
+
+2) Check if a vertex is already in a queue before inserting it so that the queue never contains duplicate copies of a vertex. This check could is not needed for correctness, *but it is part of what enables the efficient O(VE) time complexity*!
+
+We can do analyze a tokenized version of this algorithm similar to how we approached BFS:
+
+    Moore(s):
+        InitSSSP(s)
+        Push(s)
+        Push(token)
+
+        while the queue contains at least one vertex:
+            u = Pull()
+
+            if u = token:
+                push(token)
+            
+            else:
+                for all outgoing edges from u, u -> v:
+                    if u -> v is tense:
+                        Relax(u, v)
+                        if v is not in the queue:
+                            Push(v)
+
+Each vertex is pulled from the queue at most once and therefore it is checked for "tenseness" at most once in each phase.
+
+- *Every edge that is tense when a phase begins becomes relaxed during that phase.*
+
+- **This does not necessarily mean that all tensed edges end up as relaxed after the phase ends. Instead, some edges may become relaxed and then tense again within the same phase.**
+
+**We can think of Moore's algorithm as a refined version of the Bellman-Ford algorithm that uses a queue to maintain tense edges instead of testing every single tense edge.**
+
+The following lemma is analgous of Lemma 8.6
+
+**Lemma 8.7**: *For every vertex v and non-negative integer i, after i phases of Moore(), we have $dist(v) \le dist_{\le i}(v)$*
+
+- We won't prove this one but the steps are very similar to the steps taken in Lemma 8.6
+
+If the input graph has no negative cycles, the algorithm stops after, at most, V - 1 phases. Each phase scans each vertex at most once.
+
+- The worst case running time of a single phase is determined by the most number of edges that could be analyzed in that phase: $O(E)$.
+
+- **There are V -1 phases at most, therefore the overall complexity of Moore's algorithm is: $O(VE)$.**
+
+However in practice edges that were changed in the previous phase are not revisited in the current phase. 
+
+- **Mathematically we only scan edge $u \rarr v$ if $dist(u)$ was changed in the prior phase.**
+
+*If the graph has a negative cycle then Moore's algorithm breaks and keeps running!*
+
+We can fix this easily by maintaining an actual token and determining how often the token is pulled out from the queue. 
+
+- If the token is pulled out for the V - 1th time and there are still vertices left in the queue we can confirm the existence of a negative cycle.
+
+### Dynamic Programming Formulation
+
+To develop a dynamic programming approach to the Bellman-Ford algorithm we should have a recursive definition of the shortest path distances.
+
+- Recall that this algorithm works on more than just dags, therefore we cannot fall back on the recurrence we have been using up to this point.
+
 
 
 ---
