@@ -691,7 +691,93 @@ To develop a dynamic programming approach to the Bellman-Ford algorithm we shoul
 
 - Recall that this algorithm works on more than just dags, therefore we cannot fall back on the recurrence we have been using up to this point.
 
+Bellman's recurrence relation utilizes the maximum number of edges as an addition parameter that decreases at each recursive call to ensure a trivial base case.
 
+- Let $dist_{\le i}(v)$ represent the length of the shortest walk from s to v consisting of at most i edges
+
+This function follows a recurrence:
+
+$$dist_{\le i}(v) = 0$$
+
+if i = 0 and v = s
+
+$$dist_{\le i}(v)  = \infin$$
+
+if i = 0 and v != s
+
+$$dist_{\le i}(v) = min \{ dist_{\le i}(v-1), \space \space min_{u \rarr v}(dist_{\le i - 1}(u) + weight(u \rarr v)) \}$$
+
+Here is how Bellman presented his shortest path algorithm:
+
+Pseudocode:
+
+    BellmanFordDP(s):
+        dist[0, s] = 0
+        for every vertex v that isn't s:
+            dist[0, v] = infinity
+        for i = 1 to V - 1:
+            for every vertex v:
+                dist[i, v] = dist[i - 1, v]
+                for every incoming edge to v, u-> v:
+                    if dist[i, v] > dist[i - 1, u] + weight(u, v):
+                        dist[i, v] = dist[i - 1, u] + weight(u, v)
+
+The outermost loop does consider every vertex once, but the order in which they are considered does not matter!
+
+- If this is the case then the inner for loop can be unindented.
+
+Pseudocode:
+
+    BellmanFordDP2(s):
+        dist[0, s] = 0
+        for every vertex v that isn't s:
+            dist[0, v] = infinity
+        for i = 1 to V - 1:
+            for every vertex v:
+                dist[i, v] = dist[i - 1, v]
+            for every incoming edge to v, u-> v:
+                if dist[i, v] > dist[i - 1, u] + weight(u, v):
+                    dist[i, v] = dist[i - 1, u] + weight(u, v)
+
+Now we can change the indices in the last two lines of i - 1 to i.
+
+*Why can or should we do this?*: This change still allows the algorithm to correctly comput the shortest path distances. This change also allows us to replicate the behavior described in Lemmas 8.6 and 8.7 one to one.
+
+Pseudocode:
+
+    BellmanFordDP3(s):
+        dist[0, s] = 0
+
+        for every vertex v other than s:
+            dist[0, v] = infinity
+        for i = 1 to V -1:
+            for every vertex v:
+                dist[i, v] = dist[i - 1, v]
+            for every incoming edge to v, u -> v:
+                if dist[i, v] > dist[i, u] + weight(u, v):
+                    dist[i, v] = dist[i, u] + weight(u, v)
+
+Lets examine the operations here clearly.
+
+In the ith iteration of the outer loop we are copying the i-1th row of the array into the ith row and then modifying the elements of the ith row.
+
+- What this means is that we really do not need a 2D array since the iteration index is only useful if we want to see the process. If we merely want the end goal, it appears in the last row of our 2D array. Therefore we ultimately need only a single row and a simple 1D array.
+
+Pseudocode:
+
+    BellmanFordFinal(s):
+        dist[s] = 0
+        for every vertex v other than s:
+            dist[v] = infinity
+        for i = 1 to V - 1:
+            for every incoming edge to v, u -> v:
+                if dist[v] > dist[u] + weight(u, v):
+                    dist[v] = dist[u] + weight(u, v)
+
+This finalized formulation is practically identical to our inital Bellman Ford algorithm.
+
+Only two simple (easy to implement) features are missing:
+- There are no predecessor pointers and the program does not detect or account for negative cycles.
 
 ---
 
