@@ -777,7 +777,7 @@ Pseudocode:
 This finalized formulation is practically identical to our inital Bellman Ford algorithm.
 
 Only two simple (easy to implement) features are missing:
-- There are no predecessor pointers and the program does not detect or account for negative cycles.
+- **There are no predecessor pointers and the program does not detect or account for negative cycles.**
 
 ---
 
