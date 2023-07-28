@@ -381,7 +381,7 @@ Here is a textbook illustration of what is going on in this algorithm in terms o
 
 Do not get it twisted. **There is a simple modification that turns breadth-first search into best first search: we use a priority queue as opposed to a traditional queue!**
 
-- At any time during this algorithm, an edge $u \rArr v$ is tense if and only if u is in the priority queue or was the vertex that was most recently extracted from it.
+- At any time during this algorithm, an edge $u \Rarr v$ is tense if and only if u is in the priority queue or was the vertex that was most recently extracted from it.
 
 Pseudocode:
 
