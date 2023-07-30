@@ -1,4 +1,5 @@
 from queue import PriorityQueue
+from heapdict import heapdict
 
 # Problem:
 ''' The built in priority in Python does not have a DecreaseKey function.
@@ -35,29 +36,55 @@ def dijkstra(s, vertices, adj_list) -> None:
     
     init_sssp(vertices, s)
     pq = PriorityQueue()
+    pq = heapdict()
     
-    print("Starting...")
+    print("Starting")
     
     vertices[s].marked = True
-    pq.put((paths[s], vertices[s]))
-
-    while pq.qsize() != 0:
+    pq[vertices[s]] = paths[s]
+    
+    while len(pq) != 0:
         
-        u = pq.get()[1]
+        u = pq.popitem()[0]
+        
         for i in range(len(adj_list[u.pos])):
-            
             v = vertices[adj_list[u.pos][i][0]]
             weight = adj_list[u.pos][i][1]
             
             if paths[u.pos] + weight < paths[v.pos]:
                 
-                relax(u, v, weight) # This already updates the value of v.path GLOBALLY
+                relax(u, v, weight)
                 
                 if v.marked == True:
-                    continue
+                    pq[v] = paths[v.pos]
                 else:
                     v.marked = True
-                    pq.put((paths[v.pos], v))
+                    pq[v] = paths[v.pos]
+                    
+        
+        
+    # print("Starting...")
+    
+    # vertices[s].marked = True
+    # pq.put((paths[s], vertices[s]))
+
+    # while pq.qsize() != 0:
+        
+    #     u = pq.get()[1]
+    #     for i in range(len(adj_list[u.pos])):
+            
+    #         v = vertices[adj_list[u.pos][i][0]]
+    #         weight = adj_list[u.pos][i][1]
+            
+    #         if paths[u.pos] + weight < paths[v.pos]:
+                
+    #             relax(u, v, weight) # This already updates the value of v.path GLOBALLY
+                
+    #             if v.marked == True:
+    #                 continue
+    #             else:
+    #                 v.marked = True
+    #                 pq.put((paths[v.pos], v))
     return
 
 def relax(u, v, weight) -> None:
@@ -77,7 +104,7 @@ def init_sssp(vertices, s) -> None:
     
     for i in range(len(vertices)):
         if i != s:
-            paths[i] = 1000000
+            paths[i] = float("Inf")
             preds[i] = None
             
     return
@@ -88,6 +115,9 @@ def main():
                 Vertex(3), Vertex(4), Vertex(5)]
     adj_list = [[[1, 7], [2, 12]], [[2, 2], [3, 9]], [[4, 10]], [[5, 1]], [[3, 4], [5, 5]], []]
     
+    adj_list = [[[2, -2]], [[0, 4], [2, 3]], [[3, 2]], [[1, -1]], [[0, 0], [1, 0], [2, 0], [3, 0]]]
+    vertices = [Vertex(0), Vertex(1), Vertex(2), Vertex(3), Vertex(4)]
+    
     global paths
     global preds
     
@@ -95,7 +125,7 @@ def main():
     
     preds = [None] * len(vertices)
     
-    source = 0
+    source = 4
     
     dijkstra(source, vertices, adj_list)
     

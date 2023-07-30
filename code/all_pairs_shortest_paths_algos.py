@@ -1,17 +1,18 @@
-from collections import defaultdict
 from queue import PriorityQueue
+from heapdict import heapdict
 
-def min_distance(dist, visit):
+class Vertex():
+    MAX = 1000000
+    
+    def __init__(self, pos, marked = False) -> None:
+        self.pos = pos
+        self.marked = marked
+        
+    def __repr__(self) -> str:
+        return str(self.pos) + " min path = " + str(self.path)
 
-    (minimum, Minimum_Vertex) = (INT_MAX, 0)
-    for vertex in range(len(dist)):
-        if minimum > dist[vertex] and visit[vertex] == False:
-            (minimum, minVertex) = (dist[vertex], vertex)
-
-    return Minimum_Vertex
-
-def bellman_ford(vertices, edges, src):
-
+def bellman_ford(vertices, adj_list, src):
+    
     # All the distance values are
     # initialized to 0, with the exception
     # of the distance from the source to itself
@@ -31,8 +32,8 @@ def bellman_ford(vertices, edges, src):
         # We go through the entire edge list,
         # i will contain the index of the tail end vertex
         # and j will contain the edge itself (which has two values)
-        for i in range(len(edges)):
-            for j in range(len(edges[i])):
+        for i in range(len(adj_list)):
+            for j in range(len(adj_list[i])):
                 
                 # We decipher the actual edge.
                 # The 0th indexed value of the edge is the
@@ -40,10 +41,9 @@ def bellman_ford(vertices, edges, src):
                 # The 1st indexed value of the edge is the
                 # weight of the edge.
                 # We use u and just another name for i
-                v = edges[i][j][0]
-                w = edges[i][j][1]
+                v = adj_list[i][j][0]
+                w = adj_list[i][j][1]
                 u = i
-                
                 
                 # If the current dist of the tail end vertex, dist[u],
                 # is not infinity and if the sum
@@ -60,45 +60,127 @@ def bellman_ford(vertices, edges, src):
     # indicates that whatever edge that is left to minimized can
     # minimized indefinitely (infinitely). This
     # indicates the presence of a negative loop.
-    for i in range(len(edges)):
-        for j in range(len(edges[i])):
-            v = edges[i][j][0]
-            w = edges[i][j][1]
+    for i in range(len(adj_list)):
+        for j in range(len(adj_list[i])):
+            v = adj_list[i][j][0]
+            w = adj_list[i][j][1]
             if dist[i] != float("Inf") and dist[i] + w < dist[v]:
                 print("Negative cycle detected")
-                return
+                return []
+            
                 
     # After the algorithm is over we simply print out an informal
     # breakdown of what the dist array represents.
-    for i in range(len(dist)):
-        print("The minimum distance from", src, "to", i, "is", dist[i])
+    
+    return dist
 
+def dijkstra(s, vertices, adj_list):
+    
+    dist = [float("Inf")] * len(vertices)
+    
+    preds = [None] * len(vertices)
+    
+    pq = heapdict() # as opposed to PriorityQueue
+    
+    dist[s] = 0
+    
+    print("Starting")
+    
+    vertices[s].marked = True
+    pq[vertices[s]] = dist[s]
+    
+    while len(pq) != 0:
+        
+        u = pq.popitem()[0]
+        
+        for i in range(len(adj_list[u.pos])):
+            
+            v = vertices[adj_list[u.pos][i][0]]
+            weight = adj_list[u.pos][i][1]
+            
+            if dist[u.pos] + weight < dist[v.pos]:
+                
+                result = relax(u, v, weight, dist)
+                dist[v.pos] = result[0]
+                preds[v.pos] = result[1]
+                
+                if v.marked == True:
+                    pq[v] = dist[v.pos]
+                else:
+                    v.marked = True
+                    pq[v] = dist[v.pos]
 
-def dijkstra(adj_list, mod_adj_list, src):
-    
-    v = len(adj_list)
-    
-    sptSet = defaultdict(lambda: False)
-    
-    dist = [float('Inf')] * v
-    
-    dist[src] = 0
-    
-    for i in range(v):
-        current = 
-    
-    
+    return dist
 
-def johnson_apsp(vertices, edges, dist):
+def relax(u, v, weight, dist) -> None:
     
+    # v.path = u.path + weight
+    # v.prev = u
     
+    return [dist[u.pos] + weight, u]
     
-    return
+def johnson(vertices, adj_list):
     
+    # Add an artifical source vertex
+    
+    vertices.append(Vertex(len(vertices)))
+    adj_list.append([])
+    
+    for i in range(len(vertices) - 1):
+        adj_list[len(vertices) - 1].append([i, 0])
+    
+    # Compute vertex prices (minimum distances from the
+    # artifical vertex) and fail gracefully if needed.
+    
+    bf_distances = bellman_ford(vertices, adj_list, len(vertices) - 1)
+    
+    if len(bf_distances) == 0:
+        print("Negative cycle detected!")
+        return None
+    
+    # Reweight every edge
+    for i in range(len(vertices) - 1):
+        neighbors = adj_list[i]
+        for neighbor in neighbors:
+            u = i
+            v = neighbor[0]
+            neighbor[1] = bf_distances[u] + neighbor[1] - bf_distances[v]
+    
+    dj_distances = []
+    
+    # Extra step remove s:
+    del vertices[-1]
+    del adj_list[-1]
+    
+    # Compute reweighted shortest path distance
+    # with the reweighted edges.
+    for i in range(len(vertices)):
+        result = dijkstra(i, vertices, adj_list)
+        dj_distances.append(result)
+    
+    # Compute the original shortest path distances
+    for u in range(len(vertices)):
+        for v in range(len(vertices)):
+            if dj_distances[u][v] == float("Inf"):
+                continue
+            dj_distances[u][v] += (bf_distances[v] - bf_distances[u])
+            
+    
+    return dj_distances
+
 def main():
     
+     # print("Starting...")
+    
+    adj_list = [[[2, -2]], [[0, 4], [2, 3]], [[3, 2]], [[1, -1]]]
+    vertices = [Vertex(0), Vertex(1), Vertex(2), Vertex(3)]
+    
+    result = johnson(vertices, adj_list)
+    
+    for i in range(len(result)):
+        print(result[i])
+    
     return
-    
-    
+
 if __name__ == '__main__':
     main()
